@@ -1,0 +1,813 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="https://tx.2cnm.cn/tp/wywl.png">
+    <title> 小K源码网演示站  www.xkwo.com</title>
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .gender-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .gender-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3);
+        }
+        
+        /* 分类选择器 */
+        .category-selector {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .category-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.3);
+        }
+        
+        .category-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+            color: #fff;
+        }
+        
+        .category-dropdown {
+            position: relative;
+        }
+        
+        .dropdown-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .dropdown-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.3);
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 5px;
+            background: rgba(30, 30, 30, 0.95);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            padding: 8px;
+            min-width: 120px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .dropdown-menu.show {
+            display: flex;
+        }
+        
+        .dropdown-item {
+            padding: 10px 12px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            background: transparent;
+            border: none;
+            text-align: left;
+            white-space: nowrap;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(255, 107, 107, 0.2);
+        }
+        
+        .dropdown-item.active {
+            background: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .icon-img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .video-wrapper {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: #000;
+            margin-top: 30px;
+            aspect-ratio: 9/16;
+            touch-action: pan-y;
+        }
+
+        #video-element {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            cursor: default;
+        }
+
+        .decorative-border {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            border: 3px solid var(--primary-color);
+            border-radius: 30px;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .floating-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .like-btn.active .icon-img {
+            filter: brightness(0) saturate(100%) invert(58%) sepia(85%) saturate(4921%) hue-rotate(325deg) brightness(101%) contrast(101%);
+            animation: pulse 0.5s;
+        }
+
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: var(--primary-color);
+            display: none;
+        }
+
+        .spinner {
+            animation: fa-spin 2s infinite linear;
+        }
+
+        @keyframes fa-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.5; transform: translate(-50%, -120%) scale(1.5); }
+            100% { opacity: 0; transform: translate(-50%, -150%) scale(2); }
+        }
+
+        .floating-text {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--secondary-color);
+            font-weight: bold;
+            animation: float 2s infinite;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: popIn 0.3s ease-out;
+            z-index: 100;
+        }
+
+        .qq-icon {
+            width: 24px;
+            height: 24px;
+            background-image: url('https://tx.2cnm.cn/tp/qq.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .heart-effect {
+            position: absolute;
+            font-size: 60px;
+            color: var(--primary-color);
+            opacity: 0.8;
+            pointer-events: none;
+            animation: fadeOut 1s forwards;
+        }
+
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 10px;
+            }
+            .video-wrapper {
+                margin-top: 70px;
+            }
+            .gender-toggle {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+            }
+            .category-selector {
+                top: 15px;
+                left: 15px;
+                flex-wrap: wrap;
+                max-width: calc(100% - 80px);
+            }
+            .category-btn,
+            .dropdown-toggle {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            .control-btn {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 分类选择器 -->
+        <div class="category-selector">
+            <button class="category-btn active" data-category="jk">🎀 JK</button>
+            <button class="category-btn" data-category="rewu">💃 热舞</button>
+            <button class="category-btn" data-category="chuanda">👗 穿搭</button>
+            <button class="category-btn" data-category="qingchun">🌸 清纯</button>
+            <div class="category-dropdown">
+                <button class="dropdown-toggle" id="dropdownToggle">
+                    📂 更多 ▼
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <button class="dropdown-item" data-category="nvda">🎓 女大</button>
+                    <button class="dropdown-item" data-category="shejie">👑 御姐</button>
+                    <button class="dropdown-item" data-category="gaozhiliang">⭐ 高质量</button>
+                    <button class="dropdown-item" data-category="heisi">🖤 黑丝</button>
+                    <button class="dropdown-item" data-category="baisi">🤍 白丝</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="floating-text">每日推荐精彩视频</div>
+        <div class="video-wrapper" id="videoWrapper">
+            <div class="decorative-border"></div>
+            <video id="video-element" playsinline autoplay muted></video>
+            <div class="floating-controls">
+                <div class="control-group">
+                    <button class="control-btn like-btn" id="likeBtn">
+                        <img id="likeIcon" class="icon-img" alt="点赞">
+                    </button>
+                    <button class="control-btn" id="qqBtn">
+                        <div class="qq-icon"></div>
+                    </button>
+                </div>
+                <div class="control-group">
+                    <button class="control-btn sound-btn" id="soundBtn">
+                        <img id="soundIcon" class="icon-img" alt="声音">
+                    </button>
+                    <button class="control-btn" id="nextBtn">
+                        <img id="nextIcon" class="icon-img" alt="下一个">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="loading-spinner" id="loadingSpinner">
+            <img id="spinnerIcon" class="icon-img spinner" alt="加载中">
+        </div>
+    </div>
+
+    <script>
+        // DOM元素引用
+        const videoElement = document.getElementById('video-element');
+        const videoWrapper = document.getElementById('videoWrapper');
+        const soundBtn = document.getElementById('soundBtn');
+        const soundIcon = document.getElementById('soundIcon');
+        const likeBtn = document.getElementById('likeBtn');
+        const likeIcon = document.getElementById('likeIcon');
+        const qqBtn = document.getElementById('qqBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const nextIcon = document.getElementById('nextIcon');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const spinnerIcon = document.getElementById('spinnerIcon');
+        // ... existing code ...
+        
+        // 视频源配置
+        const apiBaseUrl = 'https://api.5k4.cn/api/sjxjj';
+        const videoSources = {
+            jk: apiBaseUrl + '?category=jk',
+            rewu: apiBaseUrl + '?category=rewu',
+            chuanda: apiBaseUrl + '?category=chuanda',
+            qingchun: apiBaseUrl + '?category=qingchun',
+            nvda: apiBaseUrl + '?category=nvda',
+            shejie: apiBaseUrl + '?category=shejie',
+            gaozhiliang: apiBaseUrl + '?category=gaozhiliang',
+            heisi: apiBaseUrl + '?category=heisi',
+            baisi: apiBaseUrl + '?category=baisi'
+        };
+        
+        // 分类名称映射
+        const categoryNames = {
+            jk: 'JK制服',
+            rewu: '热舞',
+            chuanda: '穿搭',
+            qingchun: '清纯',
+            nvda: '女大',
+            shejie: '御姐',
+            gaozhiliang: '高质量',
+            heisi: '黑丝',
+            baisi: '白丝'
+        };
+
+        // 图标URL定义
+        const iconUrls = {
+            female: 'https://tx.2cnm.cn/tp/nusheng.png',
+            male: 'https://tx.2cnm.cn/tp/nansheng.png',
+            heart: 'https://tx.2cnm.cn/tp/mdz.png',
+            heartSolid: 'https://tx.2cnm.cn/tp/ydz.png',
+            soundOn: 'https://tx.2cnm.cn/tp/ys.png',
+            soundOff: 'https://tx.2cnm.cn/tp/jy.png',
+            next: 'https://tx.2cnm.cn/tp/xyg.png',
+            spinner: 'https://tx.2cnm.cn/tp/jzz.png',
+            qq: 'https://tx.2cnm.cn/tp/qq.png'
+        };
+
+        // 当前分类状态（默认为JK）
+        let currentCategory = 'jk';
+        // 保存静音状态
+        let isMuted = true;
+        // 初始显示加载动画
+        loadingSpinner.style.display = 'block';
+        
+        // 滑动手势相关变量
+        let startY = 0;
+        let currentY = 0;
+        let isSwiping = false;
+        const SWIPE_THRESHOLD = 40; // 滑动阈值改为40像素
+        
+        // 初始化图标
+        function initIcons() {
+            likeIcon.src = iconUrls.heart;
+            soundIcon.src = iconUrls.soundOff;
+            nextIcon.src = iconUrls.next;
+            spinnerIcon.src = iconUrls.spinner;
+        }
+        
+        // 初始化图标
+        initIcons();
+        
+        // 初始化时加载第一个视频
+        loadVideo();
+
+
+
+        // 加载新视频
+        function loadVideo() {
+            console.log('loadVideo被调用, 当前分类:', currentCategory);
+            loadingSpinner.style.display = 'block';
+            
+            // 从API获取视频URL
+            const apiUrl = videoSources[currentCategory];
+            console.log('API URL:', apiUrl);
+            
+            if (!apiUrl) {
+                console.error('未找到分类接口:', currentCategory);
+                loadingSpinner.style.display = 'none';
+                return;
+            }
+            
+            const fetchUrl = apiUrl + '&t=' + Date.now();
+            console.log('开始请求:', fetchUrl);
+            
+            fetch(fetchUrl)
+                .then(response => {
+                    console.log('收到响应:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP 错误: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('响应数据:', data);
+                    if (data.code === 200 && data.data && data.data.videoUrl) {
+                        console.log('视频URL:', data.data.videoUrl);
+                        videoElement.src = data.data.videoUrl;
+                        videoElement.muted = isMuted;
+                        
+                        // 尝试播放视频
+                        videoElement.play().catch(e => {
+                            console.log('自动播放被阻止:', e);
+                        });
+                        
+                        // 重置点赞状态
+                        likeBtn.classList.remove('active');
+                        likeIcon.src = iconUrls.heart;
+                        
+                        // 更新声音图标
+                        updateSoundIcon();
+                    } else {
+                        console.error('视频获取失败:', data.msg || '未知错误', data);
+                        loadingSpinner.style.display = 'none';
+                        showErrorNotification('视频加载失败，请重试');
+                    }
+                })
+                .catch(error => {
+                    console.error('接口请求失败:', error);
+                    loadingSpinner.style.display = 'none';
+                    
+                    // 判断并改造错误信息
+                    let errorMsg = 'API 基地址无效，请检查配置';
+                    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                        errorMsg = 'API 接口无法访问，请检查网络或基地址';
+                    }
+                    showErrorNotification(errorMsg);
+                });
+        }
+
+        // 切换分类
+        function switchCategory(category) {
+            console.log('切换分类:', category, '当前分类:', currentCategory);
+            
+            if (category === currentCategory) {
+                console.log('已经是当前分类,不切换');
+                return;
+            }
+            
+            currentCategory = category;
+            console.log('新分类设置为:', currentCategory);
+            
+            // 更新分类按钮状态
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const activeBtn = document.querySelector(`[data-category="${category}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                console.log('已激活按钮:', category);
+            }
+            
+            // 加载新视频
+            console.log('开始加载视频...');
+            loadVideo();
+            
+            // 显示通知
+            showCategoryNotification(category);
+            
+            // 关闭下拉菜单
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.remove('show');
+            }
+        }
+        
+        // 显示分类切换通知
+        function showCategoryNotification(category) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            
+            const text = document.createElement('span');
+            text.textContent = `已切换到【${categoryNames[category]}】分类`;
+            text.style.color = '#fff';
+            text.style.textShadow = '0 2px 4px rgba(0,0,0,0.5)';
+            
+            notification.appendChild(text);
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 2000);
+        }
+        
+        // 显示错误通知
+        function showErrorNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.style.background = 'rgba(255, 107, 107, 0.8)';
+            
+            const text = document.createElement('span');
+            text.textContent = message;
+            text.style.color = '#fff';
+            text.style.textShadow = '0 2px 4px rgba(0,0,0,0.5)';
+            
+            notification.appendChild(text);
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
+        }
+        
+        // 切换模式（男生视频）
+        // function toggleGenderMode() {
+        //     switchCategory('male');
+        // }
+
+        // 视频结束自动播放下一个
+        videoElement.addEventListener('ended', function() {
+            loadVideo();
+        });
+
+        // 声音按钮点击事件
+        soundBtn.addEventListener('click', function() {
+            // 切换静音状态
+            isMuted = !isMuted;
+            videoElement.muted = isMuted;
+            
+            // 更新图标
+            updateSoundIcon();
+        });
+
+        // 更新声音图标状态
+        function updateSoundIcon() {
+            if (isMuted) {
+                soundIcon.src = iconUrls.soundOff;
+            } else {
+                soundIcon.src = iconUrls.soundOn;
+            }
+        }
+
+        // 初始化声音图标
+        updateSoundIcon();
+
+        // 点赞按钮点击事件
+        likeBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            if (this.classList.contains('active')) {
+                likeIcon.src = iconUrls.heartSolid;
+                // 点赞动画效果
+                this.style.animation = 'pulse 0.5s';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 500);
+            } else {
+                likeIcon.src = iconUrls.heart;
+            }
+        });
+
+        // QQ按钮点击事件
+        qqBtn.addEventListener('click', function() {
+            window.open('https://www.baidu.com');
+        });
+
+        // 下一个视频按钮
+        nextBtn.addEventListener('click', function() {
+            console.log('点击了下一个视频按钮');
+            loadVideo();
+        });
+
+        // 双击点赞功能
+        videoElement.addEventListener('dblclick', function(event) {
+            likeBtn.click();
+            // 添加视觉反馈
+            const effect = document.createElement('img');
+            effect.className = 'heart-effect';
+            effect.src = iconUrls.heartSolid;
+            effect.style.width = '60px';
+            effect.style.height = '60px';
+            effect.style.top = `${event.clientY}px`;
+            effect.style.left = `${event.clientX}px`;
+            
+            document.body.appendChild(effect);
+            setTimeout(() => {
+                document.body.removeChild(effect);
+            }, 1000);
+        });
+
+        // 加载状态处理
+        videoElement.addEventListener('waiting', () => {
+            loadingSpinner.style.display = 'block';
+        });
+
+        videoElement.addEventListener('playing', () => {
+            loadingSpinner.style.display = 'none';
+        });
+
+        videoElement.addEventListener('loadeddata', () => {
+            loadingSpinner.style.display = 'none';
+        });
+        
+        videoElement.addEventListener('error', () => {
+            loadingSpinner.style.display = 'none';
+        });
+        
+        // ... existing code ...
+        
+        // 添加模式切换监听（已禁用）
+        // genderToggle.addEventListener('click', toggleGenderMode);
+        
+        // 分类按钮点击事件
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const category = this.getAttribute('data-category');
+                console.log('分类按钮被点击:', category);
+                switchCategory(category);
+            });
+        });
+        
+        // 下拉菜单项点击事件
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const category = this.getAttribute('data-category');
+                console.log('下拉菜单项被点击:', category);
+                switchCategory(category);
+            });
+        });
+        
+        // 下拉菜单切换
+        document.getElementById('dropdownToggle').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('dropdownMenu').classList.toggle('show');
+        });
+        
+        // 点击其他地方关闭下拉菜单
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('dropdownMenu');
+            const toggle = document.getElementById('dropdownToggle');
+            if (!dropdown.contains(e.target) && e.target !== toggle) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // ========== 向上滑动切换视频功能 ==========
+        
+        // 滑动手势处理
+        videoWrapper.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+            isSwiping = true;
+        });
+        
+        videoWrapper.addEventListener('touchmove', function(e) {
+            if (!isSwiping) return;
+            currentY = e.touches[0].clientY;
+            
+            // 计算滑动距离
+            const deltaY = startY - currentY;
+            
+            // 如果是向上滑动且距离超过40像素阈值
+            if (deltaY > SWIPE_THRESHOLD) {
+                // 触发切换视频
+                loadVideo();
+                isSwiping = false;
+            }
+        });
+        
+        videoWrapper.addEventListener('touchend', function() {
+            isSwiping = false;
+        });
+    </script>
+</body>
+</html>
