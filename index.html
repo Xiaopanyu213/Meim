@@ -14,10 +14,12 @@
     <meta name="application-name" content="小K视频">
     <meta name="description" content="每日推荐精彩短视频，JK、热舞、穿搭、清纯等分类">
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <!-- PWA Manifest - 使用绝对路径 -->
+    <!-- 如果你的仓库是 username.github.io，使用 "/manifest.json" -->
+    <!-- 如果你的仓库是 username.github.io/repo-name，使用 "/repo-name/manifest.json" -->
+    <link rel="manifest" href="manifest.json" id="manifestLink">
     
-    <!-- iOS 图标 -->
+    <!-- iOS 图标 - 使用绝对路径 -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://tx.2cnm.cn/tp/wywl.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://tx.2cnm.cn/tp/wywl.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://tx.2cnm.cn/tp/wywl.png">
@@ -110,13 +112,12 @@
             gap: 5px;
             overflow-x: auto;
             white-space: nowrap;
-            -webkit-overflow-scrolling: touch; /* 平滑滚动 */
-            scrollbar-width: thin; /* Firefox */
-            scrollbar-color: rgba(255, 255, 255, 0.3) transparent; /* Firefox */
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
             margin-bottom: 20px;
         }
         
-        /* 隐藏滚动条但保持滚动功能 */
         .category-selector::-webkit-scrollbar {
             height: 4px;
         }
@@ -149,7 +150,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            flex-shrink: 0; /* 防止按钮被压缩 */
+            flex-shrink: 0;
         }
         
         .category-btn:hover {
@@ -166,7 +167,7 @@
         
         .category-dropdown {
             position: relative;
-            flex-shrink: 0; /* 防止下拉菜单被压缩 */
+            flex-shrink: 0;
         }
         
         .dropdown-toggle {
@@ -655,6 +656,29 @@
         </div>
     </div>
 
+    <!-- 重定向处理脚本 - 放在最前面执行 -->
+    <script>
+        // 处理GitHub Pages添加到主屏幕后的重定向问题
+        (function() {
+            // 检查是否是iOS添加到主屏幕后访问
+            if (window.navigator.standalone) {
+                console.log('iOS添加到主屏幕模式');
+                
+                // 检查当前URL是否正确，如果404则重定向
+                if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+                    console.log('检测到错误路径，正在重定向:', window.location.pathname);
+                    window.location.href = '/';
+                }
+            }
+            
+            // 处理从404页面重定向过来的情况
+            if (sessionStorage.redirect) {
+                console.log('从404页面重定向过来');
+                delete sessionStorage.redirect;
+            }
+        })();
+    </script>
+
     <!-- Service Worker 注册和 PWA 功能 -->
     <script>
         // ========== PWA 相关功能 ==========
@@ -674,15 +698,44 @@
         window.addEventListener('offline', updateOnlineStatus);
         updateOnlineStatus();
         
+        // 修复manifest路径
+        function fixManifestPath() {
+            const manifestLink = document.getElementById('manifestLink');
+            if (manifestLink) {
+                // 获取当前页面路径
+                const currentPath = window.location.pathname;
+                const isRepoPage = currentPath.split('/').length > 2; // 检查是否在仓库子目录
+                
+                if (isRepoPage) {
+                    // 如果是仓库页面，重新设置manifest路径
+                    const repoName = currentPath.split('/')[1];
+                    manifestLink.href = '/' + repoName + '/manifest.json';
+                    console.log('修复manifest路径为:', manifestLink.href);
+                }
+            }
+        }
+        
         // Service Worker 注册
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
+                // 修复manifest路径
+                fixManifestPath();
+                
+                // 注册Service Worker
                 navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
                         console.log('Service Worker 注册成功:', registration.scope);
                     })
                     .catch(error => {
                         console.log('Service Worker 注册失败:', error);
+                        // 尝试使用相对路径注册
+                        navigator.serviceWorker.register('./service-worker.js')
+                            .then(registration => {
+                                console.log('Service Worker 使用相对路径注册成功:', registration.scope);
+                            })
+                            .catch(error2 => {
+                                console.log('Service Worker 相对路径注册也失败:', error2);
+                            });
                     });
             });
         }
@@ -697,17 +750,13 @@
         
         // 监听 beforeinstallprompt 事件
         window.addEventListener('beforeinstallprompt', (e) => {
-            // 阻止默认的安装提示
             e.preventDefault();
-            // 保存事件以便后续触发
             deferredPrompt = e;
             
-            // 显示安装按钮
             if (installButton) {
                 installButton.classList.remove('hidden');
             }
             
-            // 显示自定义安装提示（首次访问时延迟显示）
             setTimeout(() => {
                 if (!localStorage.getItem('installPromptDismissed')) {
                     installPrompt.classList.add('show');
@@ -719,14 +768,10 @@
         if (installButton) {
             installButton.addEventListener('click', async () => {
                 if (deferredPrompt) {
-                    // 显示安装提示
                     deferredPrompt.prompt();
-                    // 等待用户选择
                     const { outcome } = await deferredPrompt.userChoice;
                     console.log(`用户安装选择: ${outcome}`);
-                    // 清除保存的提示
                     deferredPrompt = null;
-                    // 隐藏安装按钮
                     installButton.classList.add('hidden');
                 }
             });
@@ -749,7 +794,6 @@
         if (laterBtn) {
             laterBtn.addEventListener('click', () => {
                 installPrompt.classList.remove('show');
-                // 24小时内不再显示
                 localStorage.setItem('installPromptDismissed', 'true');
                 setTimeout(() => {
                     localStorage.removeItem('installPromptDismissed');
@@ -771,7 +815,6 @@
             if (installPrompt) installPrompt.classList.remove('show');
             deferredPrompt = null;
             
-            // 显示安装成功通知
             showNotification('应用已成功安装到桌面！');
         });
         
@@ -821,20 +864,17 @@
             baisi: '白丝'
         };
 
-        // 当前分类状态（默认为JK）
+        // 当前分类状态
         let currentCategory = 'jk';
-        // 保存静音状态
         let isMuted = true;
-        // 初始显示加载动画
         loadingSpinner.style.display = 'block';
-        // 统计信息
         let videoLoadedCount = 0;
         
         // 滑动手势相关变量
         let startY = 0;
         let currentY = 0;
         let isSwiping = false;
-        const SWIPE_THRESHOLD = 40; // 滑动阈值改为40像素
+        const SWIPE_THRESHOLD = 40;
         
         // 初始化时加载第一个视频
         loadVideo();
@@ -842,7 +882,7 @@
         // 更新统计信息
         function updateStats() {
             if (videoCount) {
-                videoCount.textContent = Math.floor(Math.random() * 50) + 20; // 模拟随机数据
+                videoCount.textContent = Math.floor(Math.random() * 50) + 20;
             }
             if (loadedCount) {
                 loadedCount.textContent = videoLoadedCount;
@@ -871,7 +911,6 @@
             console.log('loadVideo被调用, 当前分类:', currentCategory);
             loadingSpinner.style.display = 'block';
             
-            // 从API获取视频URL
             const apiUrl = videoSources[currentCategory];
             console.log('API URL:', apiUrl);
             
@@ -899,20 +938,16 @@
                         videoElement.src = data.data.videoUrl;
                         videoElement.muted = isMuted;
                         
-                        // 尝试播放视频
                         videoElement.play().catch(e => {
                             console.log('自动播放被阻止:', e);
                         });
                         
-                        // 重置点赞状态
                         likeBtn.classList.remove('active');
                         likeIcon.classList.remove('fas', 'fa-heart');
                         likeIcon.classList.add('far', 'fa-heart');
                         
-                        // 更新声音图标
                         updateSoundIcon();
                         
-                        // 更新统计
                         videoLoadedCount++;
                         updateStats();
                     } else {
@@ -925,7 +960,6 @@
                     console.error('接口请求失败:', error);
                     loadingSpinner.style.display = 'none';
                     
-                    // 判断并改造错误信息
                     let errorMsg = 'API 基地址无效，请检查配置';
                     if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
                         errorMsg = 'API 接口无法访问，请检查网络或基地址';
@@ -946,7 +980,6 @@
             currentCategory = category;
             console.log('新分类设置为:', currentCategory);
             
-            // 更新分类按钮状态
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -960,14 +993,11 @@
                 console.log('已激活按钮:', category);
             }
             
-            // 加载新视频
             console.log('开始加载视频...');
             loadVideo();
             
-            // 显示通知
             showCategoryNotification(category);
             
-            // 关闭下拉菜单
             const dropdownMenu = document.getElementById('dropdownMenu');
             if (dropdownMenu) {
                 dropdownMenu.classList.remove('show');
@@ -1049,11 +1079,8 @@
 
         // 声音按钮点击事件
         soundBtn.addEventListener('click', function() {
-            // 切换静音状态
             isMuted = !isMuted;
             videoElement.muted = isMuted;
-            
-            // 更新图标
             updateSoundIcon();
         });
 
@@ -1077,7 +1104,6 @@
             if (this.classList.contains('active')) {
                 likeIcon.classList.remove('far', 'fa-heart');
                 likeIcon.classList.add('fas', 'fa-heart');
-                // 点赞动画效果
                 this.style.animation = 'pulse 0.5s';
                 setTimeout(() => {
                     this.style.animation = '';
@@ -1102,7 +1128,6 @@
         // 双击点赞功能
         videoElement.addEventListener('dblclick', function(event) {
             likeBtn.click();
-            // 添加视觉反馈
             const effect = document.createElement('div');
             effect.className = 'heart-effect';
             effect.innerHTML = '<i class="fas fa-heart"></i>';
@@ -1181,12 +1206,9 @@
             if (!isSwiping) return;
             currentY = e.touches[0].clientY;
             
-            // 计算滑动距离
             const deltaY = startY - currentY;
             
-            // 如果是向上滑动且距离超过40像素阈值
             if (deltaY > SWIPE_THRESHOLD) {
-                // 触发切换视频
                 loadVideo();
                 isSwiping = false;
             }
@@ -1195,12 +1217,6 @@
         videoWrapper.addEventListener('touchend', function() {
             isSwiping = false;
         });
-        
-        // 添加到主屏幕的提示
-        if (window.navigator.standalone === true) {
-            console.log('应用已添加到主屏幕');
-            // 可以在这里添加全屏模式下的特殊处理
-        }
     </script>
 </body>
 </html>
