@@ -26,19 +26,17 @@
             box-sizing: border-box;
         }
 
-        /* 核心修复：锁定 body 不滚动，使用全屏黑色 */
         body {
             background: #000000 !important;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: #fff;
             height: 100vh;
             width: 100vw;
-            overflow: hidden; /* 防止出现多余滚动条 */
+            overflow: hidden; 
             display: flex;
             flex-direction: column;
         }
 
-        /* 容器填充整个视口 */
         .app-container {
             flex: 1;
             width: 100%;
@@ -49,36 +47,38 @@
             flex-direction: column;
         }
         
-        /* 修复：导航条改为固定定位，确保在最上方 */
+        /* 分类导航条 */
         .category-selector {
             position: fixed;
-            top: env(safe-area-inset-top, 0px); /* 紧贴刘海屏底部 */
+            top: env(safe-area-inset-top, 0px);
             left: 50%;
             transform: translateX(-50%);
             width: 95%;
             max-width: 580px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(40, 40, 40, 0.6); /* 略微加深背景增加对比度 */
             border-radius: 12px;
-            backdrop-filter: blur(15px);
-            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000; /* 确保在最上层 */
             padding: 6px;
             display: flex;
             align-items: center;
             gap: 4px;
-            margin-top: 10px; /* 距离顶部的微调 */
+            margin-top: 10px;
         }
         
         .category-btn {
             flex: 1;
             background: transparent;
             border: none;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255,255,255,0.7);
             padding: 8px 0;
             border-radius: 8px;
             cursor: pointer;
             font-size: 13px;
             white-space: nowrap;
             text-align: center;
+            transition: all 0.2s;
         }
         
         .category-btn.active {
@@ -87,6 +87,11 @@
             font-weight: bold;
         }
         
+        .category-dropdown {
+            position: relative;
+            display: flex;
+        }
+
         .dropdown-toggle {
             padding: 8px 10px;
             color: #fff;
@@ -94,39 +99,59 @@
             border-radius: 8px;
             border: none;
             font-size: 12px;
+            white-space: nowrap;
         }
 
+        /* 修复：下拉菜单显示不全的问题 */
         .dropdown-menu {
             position: absolute;
-            top: 110%;
+            top: 120%; /* 距离上方按钮留出间隙 */
             right: 0;
-            background: rgba(20, 20, 20, 0.95);
+            background: rgba(30, 30, 30, 0.98); /* 提高不透明度 */
             border-radius: 12px;
-            padding: 8px;
+            padding: 6px;
             display: none;
             flex-direction: column;
-            min-width: 100px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            min-width: 120px;
+            max-height: 300px; /* 限制最大高度 */
+            overflow-y: auto; /* 内容过多时可滚动 */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 2000; /* 比导航条更高的层级 */
         }
         
-        .dropdown-menu.show { display: flex; }
+        .dropdown-menu.show { 
+            display: flex; 
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .dropdown-item {
-            padding: 10px;
-            color: #fff;
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.9);
             border: none;
             background: transparent;
             text-align: left;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: nowrap;
         }
 
-        /* 修复：视频区域撑满屏幕，消除边框感 */
+        .dropdown-item:active {
+            background: var(--primary-color);
+        }
+
+        /* 视频主体 */
         .video-wrapper {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%; /* 撑满全屏 */
+            height: 100%; 
             background: #000;
             z-index: 1;
         }
@@ -134,17 +159,12 @@
         #video-element {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 像抖音一样全屏铺满 */
-        }
-
-        /* 装饰边框在全屏模式下通常建议去掉或改淡，这里改为极淡的阴影 */
-        .decorative-border {
-            display: none; /* 建议关闭，减少杂乱感 */
+            object-fit: cover; 
         }
 
         .floating-controls {
             position: absolute;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 30px); /* 适配底部小横条 */
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 30px);
             left: 20px;
             right: 20px;
             display: flex;
@@ -160,12 +180,13 @@
         }
 
         .control-btn {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255,255,255,0.1);
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             color: #fff;
             display: flex;
             align-items: center;
@@ -185,28 +206,18 @@
 
         .floating-text {
             position: absolute;
-            top: calc(env(safe-area-inset-top, 0px) + 70px);
+            top: calc(env(safe-area-inset-top, 0px) + 80px);
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255,255,255,0.5);
-            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
             z-index: 5;
+            letter-spacing: 1px;
         }
 
-        .notification {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            padding: 10px 20px;
-            border-radius: 8px;
-            z-index: 1000;
-        }
-
-        @keyframes fa-spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* 隐藏滚动条 */
+        .dropdown-menu::-webkit-scrollbar {
+            width: 0px;
         }
     </style>
 </head>
@@ -224,11 +235,12 @@
                     <button class="dropdown-item" data-category="shejie">御姐</button>
                     <button class="dropdown-item" data-category="gaozhiliang">高质量</button>
                     <button class="dropdown-item" data-category="heisi">黑丝</button>
+                    <button class="dropdown-item" data-category="baisi">白丝</button>
                 </div>
             </div>
         </div>
         
-        <div class="floating-text">上下滑动切换视频</div>
+        <div class="floating-text">—— 上滑切换视频 ——</div>
 
         <div class="video-wrapper" id="videoWrapper">
             <video id="video-element" playsinline autoplay muted loop></video>
@@ -236,18 +248,18 @@
             <div class="floating-controls">
                 <div class="control-group">
                     <button class="control-btn" id="likeBtn">
-                        <i class="far fa-heart fa-icon" id="likeIcon" style="font-size: 22px;"></i>
+                        <i class="far fa-heart" id="likeIcon" style="font-size: 24px;"></i>
                     </button>
                     <button class="control-btn" onclick="window.open('https://www.baidu.com')">
-                        <i class="fab fa-qq" style="font-size: 22px;"></i>
+                        <i class="fab fa-qq" style="font-size: 24px;"></i>
                     </button>
                 </div>
                 <div class="control-group">
                     <button class="control-btn" id="soundBtn">
-                        <i class="fas fa-volume-mute" id="soundIcon" style="font-size: 20px;"></i>
+                        <i class="fas fa-volume-mute" id="soundIcon" style="font-size: 22px;"></i>
                     </button>
                     <button class="control-btn" id="nextBtn">
-                        <i class="fas fa-step-forward" style="font-size: 20px;"></i>
+                        <i class="fas fa-step-forward" style="font-size: 22px;"></i>
                     </button>
                 </div>
             </div>
@@ -263,6 +275,8 @@
         const soundBtn = document.getElementById('soundBtn');
         const soundIcon = document.getElementById('soundIcon');
         const nextBtn = document.getElementById('nextBtn');
+        const likeBtn = document.getElementById('likeBtn');
+        const likeIcon = document.getElementById('likeIcon');
         const loading = document.getElementById('loadingSpinner');
         
         let currentCategory = 'jk';
@@ -278,10 +292,15 @@
                 if(data.code === 200) {
                     video.src = data.data.videoUrl;
                     video.muted = isMuted;
-                    video.play();
+                    video.play().catch(e => console.log("播放被拦截"));
+                    
+                    // 重置点赞状态
+                    likeBtn.classList.remove('active');
+                    likeIcon.className = 'far fa-heart';
+                    likeIcon.style.color = '#fff';
                 }
             } catch (e) {
-                console.error("加载失败");
+                console.error("API请求失败");
             }
         }
 
@@ -296,6 +315,17 @@
 
         nextBtn.onclick = loadVideo;
 
+        likeBtn.onclick = () => {
+            const isActive = likeBtn.classList.toggle('active');
+            if(isActive) {
+                likeIcon.className = 'fas fa-heart';
+                likeIcon.style.color = '#ff6b6b';
+            } else {
+                likeIcon.className = 'far fa-heart';
+                likeIcon.style.color = '#fff';
+            }
+        };
+
         // 手势切换
         let touchY = 0;
         document.addEventListener('touchstart', e => touchY = e.touches[0].clientY);
@@ -303,25 +333,38 @@
             if (touchY - e.changedTouches[0].clientY > 50) loadVideo();
         });
 
-        // 分类切换
+        // 分类切换逻辑
         document.querySelectorAll('[data-category]').forEach(btn => {
-            btn.onclick = () => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
                 currentCategory = btn.getAttribute('data-category');
-                document.querySelectorAll('.category-btn').forEach(b => b.classList.toggle('active', b === btn));
+                
+                // 更新主按钮激活状态
+                document.querySelectorAll('.category-btn').forEach(b => {
+                    b.classList.toggle('active', b.getAttribute('data-category') === currentCategory);
+                });
+                
                 loadVideo();
                 document.getElementById('dropdownMenu').classList.remove('show');
             };
         });
 
+        // 更多菜单切换
         document.getElementById('dropdownToggle').onclick = (e) => {
             e.stopPropagation();
             document.getElementById('dropdownMenu').classList.toggle('show');
         };
 
-        window.onclick = () => document.getElementById('dropdownMenu').classList.remove('show');
+        // 点击空白处关闭菜单
+        window.onclick = () => {
+            document.getElementById('dropdownMenu').classList.remove('show');
+        };
 
+        // PWA 注册脚本 (GitHub Pages 必须)
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW失败', err));
+            });
         }
 
         loadVideo();
