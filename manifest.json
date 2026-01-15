@@ -1,6 +1,6 @@
 {
-  "name": "小K源码网演示站",
-  "short_name": "小K演示",
+  "name": "休闲时间",
+  "short_name": "咻咻",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
@@ -13,4 +13,5 @@
     }
   ]
 }
+
 
